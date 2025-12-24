@@ -1,6 +1,10 @@
 import streamlit as st
 import io
+import os
 from PIL import Image
+import boto3
+from botocore.exceptions import ClientError
+
 
 USE_AWS_REKOGNITION = True
 rekognition = None

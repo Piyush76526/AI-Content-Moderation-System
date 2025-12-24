@@ -3,9 +3,6 @@ import re
 import io
 from PIL import Image
 
-# =====================================
-# OPTIONAL AWS (IMAGE ONLY)
-# =====================================
 USE_AWS_REKOGNITION = True
 rekognition = None
 AWS_AVAILABLE = False
@@ -18,9 +15,6 @@ if USE_AWS_REKOGNITION:
     except Exception:
         AWS_AVAILABLE = False
 
-# =====================================
-# IMAGE MODERATION (AWS OPTIONAL)
-# =====================================
 def scan_image_aws(image_bytes):
     image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
     buffer = io.BytesIO()
@@ -37,9 +31,6 @@ def scan_image_aws(image_bytes):
         return "❌ HARMFUL IMAGE CONTENT", labels
     return "✅ SAFE IMAGE CONTENT", None
 
-# =====================================
-# TEXT RULE DATA
-# =====================================
 harmful_words = ["fuck", "idiot", "bitch", "asshole", "hate", "kill"]
 scam_keywords = ["otp", "lottery", "bank blocked", "click link", "hack", "fraud"]
 fake_news_claims = [
@@ -49,9 +40,7 @@ fake_news_claims = [
     "war started"
 ]
 
-# =====================================
-# TEXT ANALYSIS
-# =====================================
+
 def analyze_text(text):
     t = text.lower()
 
@@ -69,9 +58,6 @@ def analyze_text(text):
 
     return "✅ TEXT APPEARS SAFE", "No harmful patterns detected"
 
-# =====================================
-# STREAMLIT UI
-# =====================================
 st.title("🛡️ AI Content Moderation System")
 
 st.markdown("""
@@ -81,9 +67,6 @@ st.markdown("""
 3. **Upload images** (unsafe content detection)
 """)
 
-# ==================================================
-# 🔹 MAIN FEATURE: TEXT WRITING BOX (CLEARLY VISIBLE)
-# ==================================================
 st.subheader("✍️ Write Text Here")
 
 typed_text = st.text_area(
@@ -106,9 +89,6 @@ if typed_text.strip():
 
 st.markdown("---")
 
-# ==================================================
-# FILE UPLOAD SECTION
-# ==================================================
 st.subheader("📂 Upload File")
 
 uploaded_file = st.file_uploader(
@@ -117,7 +97,7 @@ uploaded_file = st.file_uploader(
 )
 
 if uploaded_file:
-    # ---------- TEXT FILE ----------
+
     if uploaded_file.type == "text/plain":
         text = uploaded_file.read().decode("utf-8")
         st.subheader("📄 File Content")
@@ -134,7 +114,6 @@ if uploaded_file:
 
         st.info(reason)
 
-    # ---------- IMAGE FILE ----------
     else:
         image_bytes = uploaded_file.read()
         image = Image.open(io.BytesIO(image_bytes))

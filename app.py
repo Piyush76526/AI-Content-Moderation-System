@@ -1,5 +1,4 @@
 import streamlit as st
-import re
 import io
 from PIL import Image
 
@@ -7,15 +6,18 @@ USE_AWS_REKOGNITION = True
 rekognition = None
 AWS_AVAILABLE = False
 
-if USE_AWS_REKOGNITION:
-    try:
-        import boto3
-        rekognition = boto3.client("rekognition", region_name="us-east-1")
-        AWS_AVAILABLE = True
-    except Exception:
-        AWS_AVAILABLE = False
+try:
+    import boto3
+    rekognition = boto3.client("rekognition", region_name="us-east-1")
+    AWS_AVAILABLE = True
+except Exception:
+    AWS_AVAILABLE = False
+
 
 def scan_image_aws(image_bytes):
+    if not AWS_AVAILABLE:
+        return "❌ AWS NOT CONFIGURED PROPERLY", None
+
     image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
     buffer = io.BytesIO()
     image.save(buffer, format="JPEG")
@@ -29,7 +31,9 @@ def scan_image_aws(image_bytes):
     labels = response.get("ModerationLabels", [])
     if labels:
         return "❌ HARMFUL IMAGE CONTENT", labels
+
     return "✅ SAFE IMAGE CONTENT", None
+
 
 harmful_words = ["fuck", "idiot", "bitch", "asshole", "hate", "kill"]
 scam_keywords = ["otp", "lottery", "bank blocked", "click link", "hack", "fraud"]
@@ -58,13 +62,14 @@ def analyze_text(text):
 
     return "✅ TEXT APPEARS SAFE", "No harmful patterns detected"
 
+
 st.title("🛡️ AI Content Moderation System")
 
 st.markdown("""
 ### 📝 Ways to Submit Content
-1. **Type text manually** (messages, alerts, news)
+1. **Type text manually**
 2. **Upload text files (.txt)**
-3. **Upload images** (unsafe content detection)
+3. **Upload images (AWS Rekognition)**
 """)
 
 st.subheader("✍️ Write Text Here")
@@ -97,9 +102,8 @@ uploaded_file = st.file_uploader(
 )
 
 if uploaded_file:
-
     if uploaded_file.type == "text/plain":
-        text = uploaded_file.read().decode("utf-8")
+        text = uploaded_file.read().decode("utf-8", errors="ignore")
         st.subheader("📄 File Content")
         st.code(text)
 
@@ -113,21 +117,20 @@ if uploaded_file:
             st.error(result)
 
         st.info(reason)
-
     else:
         image_bytes = uploaded_file.read()
         image = Image.open(io.BytesIO(image_bytes))
         st.image(image, caption="Uploaded Image", use_column_width=True)
 
-        if USE_AWS_REKOGNITION and AWS_AVAILABLE:
-            result, labels = scan_image_aws(image_bytes)
-            if "HARMFUL" in result:
-                st.error(result)
-                st.json(labels)
-            else:
-                st.success(result)
+        result, labels = scan_image_aws(image_bytes)
+
+        if "HARMFUL" in result:
+            st.error(result)
+            st.json(labels)
+        elif "SAFE" in result:
+            st.success(result)
         else:
-            st.warning("Image moderation will activate when AWS API is configured")
+            st.warning(result)
 
 st.markdown("---")
-st.caption("Text moderation: Rule-based NLP | Image moderation: AWS Rekognition (optional)")
+st.caption("Text moderation: Rule-based NLP | Image moderation: AWS Rekognition")

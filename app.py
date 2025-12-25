@@ -208,3 +208,4 @@ if file:
         st.error("Macie disabled — enable in AWS Console")
 
 st.caption("Powered by: pytesseract OCR + AWS Rekognition + Macie")
+

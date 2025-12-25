@@ -5,3 +5,4 @@ botocore
 jmespath
 s3transfer
 pypdf2
+pytesseract

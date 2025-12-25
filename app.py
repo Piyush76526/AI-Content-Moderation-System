@@ -110,7 +110,8 @@ def macie_result():
     return detailed
 
 st.set_page_config(page_title="AI Scanner", layout="wide")
-st.title("🛡️ Unified AI Content Moderation + AWS Scanner")
+st.subheader("AI Content Moderation + AWS")
+
 
 typed = st.text_area("✍️ Write text to analyze")
 if typed.strip():
